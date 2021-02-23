@@ -1,0 +1,6 @@
+{
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.autopep8Path": "/home/minamo/.anyenv/envs/pyenv/shims/autopep8"
+    "python.linting.enabled": true
+}

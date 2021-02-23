@@ -3,13 +3,15 @@
 ちょっとした開発のサンプルサーバー
 
 機能一覧
-* 
+
+- ユーザー認証
+- アイテム管理( 作成、読み込み、更新、削除 )
 
 ## 必要な環境
 
-* Python3
-  * FastAPI
-  * Uvicorn
+- Python3
+  - FastAPI
+  - Uvicorn
 
 ```
 $ pip3 install fastapi uvicorn
@@ -28,12 +30,9 @@ $ uvicorn main_app:app --port 3000
 FastAPI を使用しているのでドキュメントも表示可能。
 基本的に API の仕様はドキュメントを参照すること。
 
-* API サーバー
-  * http://localhost:3000
-  * Swagger 形式のドキュメント
-    * http://localhost:3000/docs
-  * ReDoc 形式のドキュメント
-    * http://localhost:3000/redoc
-
-
-
+- API サーバー
+  - http://localhost:3000
+  - Swagger 形式のドキュメント
+    - http://localhost:3000/docs
+  - ReDoc 形式のドキュメント
+    - http://localhost:3000/redoc

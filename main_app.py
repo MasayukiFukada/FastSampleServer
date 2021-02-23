@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import auth
 import item
-from post_parameter import PostItem
+from post_parameter import PostCredential, PostRefreshToken, PostItem
 
 tags_metadata = [
     {
@@ -28,13 +28,13 @@ app = FastAPI(
 
 
 @app.post("/auth/token", tags=["認証"], description="トークンを作成します ※ ログイン")
-def create_token(mail_address, password):
-    return auth_repository.authenticate(mail_address, password)
+def create_token(credential: PostCredential):
+    return auth_repository.authenticate(credential)
 
 
 @app.post("/auth/refresh", tags=["認証"], description="トークンを更新します")
-def refresh_token():
-    return {}
+def refresh_token(id: int, refresh_token: PostRefreshToken):
+    return auth_repository.refresh(id, refresh_token)
 
 # ------------------------------------------------------------------------------
 

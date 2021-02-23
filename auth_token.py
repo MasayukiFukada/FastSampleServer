@@ -2,6 +2,8 @@ import datetime
 import uuid
 
 # トークン
+
+
 class AuthToken:
     expire = datetime.datetime.now()
     value = ""

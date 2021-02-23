@@ -1,8 +1,10 @@
 from auth_token import AuthToken
-from fastapi import FastAPI, status
+from fastapi import status
 from fastapi.responses import JSONResponse
 
 # 認証データ構造定義
+
+
 class AuthData:
     id = -1
     mail_address = ""
@@ -23,6 +25,8 @@ class AuthData:
         return is_same_address & is_same_password
 
 # 認証リポジトリ
+
+
 class AuthRepository:
     data = []
 
@@ -40,7 +44,7 @@ class AuthRepository:
             if not identify.validate(input_mail_address, input_password):
                 continue
             # 認証された
-            contents = { "id": identify.id }
+            contents = {"id": identify.id}
             headers = {}
             headers["x-auth-token"] = identify.access_token.value
             headers["x-refresh-token"] = identify.refresh_token.value
@@ -49,4 +53,3 @@ class AuthRepository:
         # 認証されなかった
         contents = {}
         return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=contents)
-

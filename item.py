@@ -1,4 +1,9 @@
+from fastapi import status
+from fastapi.responses import JSONResponse
+
 # アイテムデータ構造定義
+
+
 class ItemData:
     id = -1
     image_base64 = ""
@@ -9,11 +14,12 @@ class ItemData:
         self.image_base64 = image_base64
         self.link_url = link_url
 
-
     def validate(self):
         return True
 
 # アイテムリポジトリ
+
+
 class ItemRepository:
     data = []
 
@@ -25,29 +31,49 @@ class ItemRepository:
         return self.data
 
     # 追加
-    def append(self, new_item):
+    def append(self, post_item):
+        max_id = self.max_id()
+        new_item = ItemData(max_id, post_item.image_base64, post_item.link_url)
         if not new_item.validate():
-            return False
+            contents = {}
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
 
         # 新しい ID (最大値)を割り当てる
         self.data.append(new_item)
-        return True
+        contents = {"item_id": new_item.id}
+        return JSONResponse(status_code=status.HTTP_200_OK, content=contents)
 
     # 削除
-    def remove(self, remove_id):
-        for index in range(len(self.data)):
-            if self.data[index].id == remove_id:
-                del self.data[index]
-                return True
-        return False
+    def remove(self, id):
+        try:
+            remove_id = int(id)
+            for index in range(len(self.data)):
+                if self.data[index].id == remove_id:
+                    del self.data[index]
+                    contents = {"delete": True}
+                    return JSONResponse(status_code=status.HTTP_200_OK, content=contents)
+            contents = {"delete": False}
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=contents)
+        except ValueError:
+            contents = {"delete": False}
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
 
     # 更新
-    def update(self, update_item):
-        for index in range(len(self.data)):
-            if self.data[index].id == update_item.id:
-                self.data[index] = update_item
-                return True
-        return False
+    def update(self, id, post_item):
+        try:
+            num_id = int(id)
+            for index in range(len(self.data)):
+                if self.data[index].id == num_id:
+                    update_item = ItemData(
+                        num_id, post_item.image_base64, post_item.link_url)
+                    self.data[index] = update_item
+                    contents = {"update": True}
+                    return JSONResponse(status_code=status.HTTP_200_OK, content=contents)
+            contents = {"update": False}
+            return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=contents)
+        except ValueError:
+            contents = {"update": False}
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
 
     # 最大 ID を取得
     def max_id(self):

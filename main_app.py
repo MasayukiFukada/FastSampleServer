@@ -26,8 +26,8 @@ app = FastAPI(
 # ------------------------------------------------------------------------------
 
 @app.post("/auth/token", tags=["認証"], description="トークンを作成します ※ ログイン")
-def create_token():
-  return {}
+def create_token(mail_address, password):
+  return auth_repository.authenticate(mail_address, password)
 
 @app.post("/auth/refresh", tags=["認証"], description="トークンを更新します")
 def refresh_token():

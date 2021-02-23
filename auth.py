@@ -1,4 +1,6 @@
 from auth_token import AuthToken
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 
 # 認証データ構造定義
 class AuthData:
@@ -15,8 +17,10 @@ class AuthData:
         self.password = password
         self.is_active = is_active
 
-    def validate(self):
-        return True
+    def validate(self, check_mail_address, check_password):
+        is_same_address = self.mail_address == check_mail_address
+        is_same_password = self.password == check_password
+        return is_same_address & is_same_password
 
 # 認証リポジトリ
 class AuthRepository:
@@ -24,34 +28,25 @@ class AuthRepository:
 
     def __init__(self):
         admin = AuthData(0, "admin@example.com", "admin", True)
-        self.append(admin)
+        self._append(admin)
 
-    # 読み込み
-    def load(self):
-        pass
+    # 内部専用の追加処理
+    def _append(self, account):
+        self.data.append(account)
 
-    # 追加
-    def append(self, new_auth):
-        if not new_auth.validate():
-            return False
-
-        # 新しい ID (最大値)を割り当てる
-        self.data.append(new_auth)
-        return True
-
-    # 削除
-    def remove(self, target_auth):
+    def authenticate(self, input_mail_address, input_password):
         for index in range(len(self.data)):
-            if self.data[index].id == target_auth.id:
-                self.data.remove(index)
-                break
+            identify = self.data[index]
+            if not identify.validate(input_mail_address, input_password):
+                continue
+            # 認証された
+            contents = { "id": identify.id }
+            headers = {}
+            headers["x-auth-token"] = identify.access_token.value
+            headers["x-refresh-token"] = identify.refresh_token.value
+            return JSONResponse(status_code=status.HTTP_200_OK, content=contents, headers=headers)
 
-    # 更新
-    def update(self, update_auth):
-        for index in range(len(self.data)):
-            if self.data[index].id == update_auth.id:
-                self.data[index] = update_auth
+        # 認証されなかった
+        contents = {}
+        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=contents)
 
-    # 最大 ID を取得
-    def _max_id(self):
-        return -1

@@ -1,5 +1,5 @@
 from auth_token import AuthToken
-from fastapi import status
+from fastapi import status, HTTPException
 from fastapi.responses import JSONResponse
 import datetime
 
@@ -58,10 +58,8 @@ class AuthRepository:
             headers["x-auth-token"] = identify.access_token.value
             headers["x-refresh-token"] = identify.refresh_token.value
             return JSONResponse(status_code=status.HTTP_200_OK, content=contents, headers=headers)
-
         # 認証されなかった
-        contents = {}
-        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content=contents)
+        raise HTTPException(403)
 
     def refresh(self, id, post_refresh_token):
         try:
@@ -72,12 +70,10 @@ class AuthRepository:
                     continue
                 if identify.refresh_token.value != post_refresh_token.refresh_token:
                     # リフレッシュトークンが違う
-                    contents = {"refresh": False}
-                    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
+                    raise HTTPException(403)
                 if identify.refresh_token.isExpired(datetime.datetime.now()):
                     # リフレッシュトークンが期限切れ
-                    contents = {"refresh": False}
-                    return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=contents)
+                    raise HTTPException(401)
                 # リフレッシュ許可
                 identify.refreshToken()
                 contents = {"id": identify.id}
@@ -86,8 +82,23 @@ class AuthRepository:
                 headers["x-refresh-token"] = identify.refresh_token.value
                 return JSONResponse(status_code=status.HTTP_200_OK, content=contents, headers=headers)
             # その他の事象
-            contents = {"refresh": False}
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
+            raise HTTPException(400)
         except ValueError:
-            contents = {"refresh": False}
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=contents)
+            raise HTTPException(400)
+
+    def remove(self, token):
+        for index in range(len(self.data)):
+            identify = self.data[index]
+            if identify.access_token.value == token:
+                # トークンを変更しておく
+                identify.refreshToken()
+                contents = {"logout": True}
+                return JSONResponse(status_code=status.HTTP_200_OK, content=contents)
+        raise HTTPException(404)
+
+    def isInclude(self, token, datetime):
+        for index in range(len(self.data)):
+            identify = self.data[index]
+            if identify.access_token.value == token and not identify.access_token.isExpired(datetime):
+                return True
+        return False
